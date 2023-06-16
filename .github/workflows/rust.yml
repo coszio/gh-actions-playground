@@ -28,12 +28,11 @@ jobs:
     - name: Install nextest
       uses: taiki-e/install-action@nextest
     - name: Build and run tests
-      uses: mathiasvr/command-output@v1
       id: nextest
-      with: 
-        # Profile "ci" is configured in .config/nextest.toml
-        run: |
-            cargo nextest run --workspace --retries 2
+      # Profile "ci" is configured in .config/nextest.toml
+      run: |
+        echo "stdout=$(cargo nextest run --workspace --retries 2)" >> "$GITHUB_OUTPUT"
+      
     - name: process output
       id: process-output
       run: |
