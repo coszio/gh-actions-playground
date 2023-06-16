@@ -37,7 +37,10 @@ jobs:
     - name: process output
       id: process-output
       run: |
-        echo "last-line=$(tail -n 1 ${{ steps.nextest.outputs.stdout }})" >> "$GITHUB_ENV"
+        echo "stdout=${{ steps.nextest.outputs.stdout }}" >> "$GITHUB_ENV"
+        echo $stdout
+        echo "last-line=$(tail -n 1 $stdout)" >> "$GITHUB_ENV"
+        echo $last-line
         echo "last-line=$last-line" >> "$GITHUB_OUTPUT"
         echo "last-line-last-item=$(awk '{print $NF}' $last_line)" >> "$GITHUB_OUTPUT"
     - name: Create issue for flaky tests
