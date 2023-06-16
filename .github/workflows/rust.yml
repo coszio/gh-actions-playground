@@ -1,0 +1,50 @@
+name: Rust Tests
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ '**' ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+    - name: Install minimal stable
+      uses: dtolnay/rust-toolchain@stable 
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install nextest
+      uses: taiki-e/install-action@nextest
+    - name: Build and run tests
+      id: nextest
+      # Profile "ci" is configured in .config/nextest.toml
+      run: |
+        cargo nextest run --workspace --retries 2
+        LAST_LINE = $(tail -n 1 <<< $BASH_HISTORY)
+        echo "::set-output name=last-line::$LAST_LINE"
+        echo "::set-output name=last-line-last-item::$(echo $LAST_LINE | awk '{print $NF}')"
+
+    - name: Create issue for flaky tests
+      if: ${{ contains(steps.nextest.outputs.last-line, 'FLAKY') }}
+      uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_NAME: ${{ steps.nextest.outputs.last-line-last-item }}
+        OS: ${{ matrix.os }}
+      with:
+        filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
+        update_existing: true
+        
+
