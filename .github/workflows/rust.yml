@@ -32,9 +32,9 @@ jobs:
       # Profile "ci" is configured in .config/nextest.toml
       run: |
         cargo nextest run --workspace --retries 2
-        echo "last-line=$(tail -n 1 <<< $BASH_HISTORY) >> $GITHUB_ENV"
-        echo "last-line=$last-line >> $GITHUB_OUTPUT"
-        echo "last-line-last-item=$(awk '{print $NF}' $last_line)" >> $GITHUB_OUTPUT"
+        echo "last-line=$(tail -n 1 <<< $BASH_HISTORY)" >> "$GITHUB_ENV"
+        echo "last-line=$last-line" >> "$GITHUB_OUTPUT"
+        echo "last-line-last-item=$(awk '{print $NF}' $last_line)" >> "$GITHUB_OUTPUT"
 
     - name: Create issue for flaky tests
       if: ${{ contains(steps.nextest.outputs.last-line, 'FLAKY') }}
