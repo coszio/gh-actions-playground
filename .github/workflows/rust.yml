@@ -35,7 +35,7 @@ jobs:
     - name: Catch flaky tests
       id: get-flaky-tests
       run: |
-          pip install python-yq
+          python -m pip install python-yq
           xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
           echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
           echo test=$(yq '.+@name' flaky_tests.yml -r) >> $GITHUB_OUTPUT
