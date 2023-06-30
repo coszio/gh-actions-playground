@@ -34,13 +34,12 @@ jobs:
         cargo nextest run --workspace --profile ci
     - name: Catch flaky tests
       id: get-flaky-tests
-      uses: mikefarah/yq@master
-      with:
-        cmd: |
-          yq -p=xml '.testsuites.testsuite.testcase.[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml -oy > flaky_tests.yml
-          echo has_flaky_tests=$(yq '. | has("flakyFailure")' flaky_tests.yml) >> $GITHUB_OUTPUT
-          echo test=$(yq '.+@name' flaky_tests.yml) >> $GITHUB_OUTPUT
-          echo content=$(yq '.flakyFailure.[0].system-err' flaky_tests.yml) >> $GITHUB_OUTPUT
+      run: |
+          pip install python-yq
+          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
+          echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
+          echo test=$(yq '.+@name' flaky_tests.yml -r) >> $GITHUB_OUTPUT
+          echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
           
     - name: Create issue for flaky tests
       if: ${{ steps.get-flaky-tests.outputs.has_flaky_tests == 'true' }}
