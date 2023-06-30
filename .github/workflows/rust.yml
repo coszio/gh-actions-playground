@@ -37,9 +37,14 @@ jobs:
       run: |
           pip install yq
           xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
-          echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
-          echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
-          echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
+          has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json)
+          if [ "$has_flaky_tests" = "true" ]; then
+            echo "Flaky tests found"
+            echo has_flaky_tests=$has_flaky_tests >> $GITHUB_OUTPUT
+            echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
+            echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
+          fi
+          
           
     - name: Create issue for flaky tests
       if: ${{ steps.get-flaky-tests.outputs.has_flaky_tests == 'true' }}
