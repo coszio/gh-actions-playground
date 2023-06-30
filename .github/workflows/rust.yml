@@ -31,26 +31,24 @@ jobs:
       id: nextest
       # Profile "ci" is configured in .config/nextest.toml
       run: |
-        echo "stdout=$(cargo nextest run --workspace --retries 2)" >> "$GITHUB_OUTPUT"
-      
-    - name: process output
-      id: process-output
-      run: |
-        echo "stdout=${{ steps.nextest.outputs.stdout }}" >> "$GITHUB_ENV"
-        echo $stdout
-        echo "last-line=$(tail -n 1 $stdout)" >> "$GITHUB_ENV"
-        echo $last-line
-        echo "last-line=$last-line" >> "$GITHUB_OUTPUT"
-        echo "last-line-last-item=$(awk '{print $NF}' $last_line)" >> "$GITHUB_OUTPUT"
-    - name: Create issue for flaky tests
-      if: ${{ contains(steps.process-output.outputs.last-line, 'FLAKY') }}
-      uses: JasonEtco/create-an-issue@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TEST_NAME: ${{ steps.process-output.outputs.last-line-last-item }}
-        OS: ${{ matrix.os }}
+        cargo nextest run --workspace --profile ci
+    - name: Catch flaky tests
+      id: get_flaky_tests
+      uses: mikefarah/yq@master
       with:
-        filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
-        update_existing: true
+        cmd: yq -p=xml '.testsuites.testsuite.testcase.[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml -oy
+    - name: Reuse a variable obtained in another step
+      run: echo ${{ steps.get_flaky_tests.outputs.result }}
+    
+    # - name: Create issue for flaky tests
+    #   if: ${{ contains(steps.process-output.outputs.last-line, 'FLAKY') }}
+    #   uses: JasonEtco/create-an-issue@v2
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     TEST_NAME: ${{ steps.process-output.outputs.last-line-last-item }}
+    #     OS: ${{ matrix.os }}
+    #   with:
+    #     filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
+    #     update_existing: true
         
 
