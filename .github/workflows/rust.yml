@@ -38,7 +38,7 @@ jobs:
           pip install yq
           xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
           echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
-          echo test=$(yq '.+@name' flaky_tests.yml -r) >> $GITHUB_OUTPUT
+          echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
           echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
           
     - name: Create issue for flaky tests
