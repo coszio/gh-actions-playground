@@ -39,6 +39,7 @@ jobs:
         xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
         echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
     - name: Get flaky test details
+      id: get-flaky-tests
       if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
       run: |
         echo "Flaky tests found"
