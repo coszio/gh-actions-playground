@@ -32,22 +32,20 @@ jobs:
       # Profile "ci" is configured in .config/nextest.toml
       run: |
         cargo nextest run --workspace --profile ci
-    - name: Catch flaky tests
-      id: get-flaky-tests
+    - name: Process test report
+      id: process-test-report
       run: |
-          pip install yq
-          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
-          has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json)
-          if [ "$has_flaky_tests" = "true" ]; then
-            echo "Flaky tests found"
-            echo has_flaky_tests=$has_flaky_tests >> $GITHUB_OUTPUT
-            echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
-            echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
-          fi
-          
-          
+        pip install yq
+        xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
+        echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
+    - name: Get flaky test details
+      if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
+      run: |
+        echo "Flaky tests found"
+        echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
+        echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
     - name: Create issue for flaky tests
-      if: ${{ steps.get-flaky-tests.outputs.has_flaky_tests == 'true' }}
+      if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
       uses: JasonEtco/create-an-issue@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
