@@ -33,22 +33,25 @@ jobs:
       run: |
         cargo nextest run --workspace --profile ci
     - name: Catch flaky tests
-      id: get_flaky_tests
+      id: get-flaky-tests
       uses: mikefarah/yq@master
       with:
-        cmd: yq -p=xml '.testsuites.testsuite.testcase.[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml -oy
-    - name: Reuse a variable obtained in another step
-      run: echo ${{ steps.get_flaky_tests.outputs.result }}
-    
-    # - name: Create issue for flaky tests
-    #   if: ${{ contains(steps.process-output.outputs.last-line, 'FLAKY') }}
-    #   uses: JasonEtco/create-an-issue@v2
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     TEST_NAME: ${{ steps.process-output.outputs.last-line-last-item }}
-    #     OS: ${{ matrix.os }}
-    #   with:
-    #     filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
-    #     update_existing: true
+        cmd: |
+          yq -p=xml '.testsuites.testsuite.testcase.[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml -oy > flaky_tests.yml
+          echo has_flaky_tests=$(yq '. | has("flakyFailure")' flaky_tests.yml) >> $GITHUB_OUTPUT
+          echo test=$(yq '.+@name' flaky_tests.yml) >> $GITHUB_OUTPUT
+          echo content=$(yq '.flakyFailure.[0].system-err' flaky_tests.yml) >> $GITHUB_OUTPUT
+          
+    - name: Create issue for flaky tests
+      if: ${{ steps.get-flaky-tests.outputs.has_flaky_tests == 'true' }}
+      uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_NAME: ${{ steps.get-flaky-tests.outputs.test }}
+        SYSTEM_ERR: ${{ steps.get-flaky-tests.outputs.content }}
+        OS: ${{ matrix.os }}
+      with:
+        filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
+        update_existing: true
         
 
