@@ -77,5 +77,5 @@ jobs:
           SYSTEM_ERR: ${{ steps.get-flaky-tests.outputs.content }}
           OS: ${{ matrix.os }}
         with:
-          filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
+          filename: .github/ISSUE_TEMPLATES/flaky_test_report.md
           update_existing: true
