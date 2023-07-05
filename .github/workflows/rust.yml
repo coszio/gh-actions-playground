@@ -74,7 +74,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TEST_NAME: ${{ steps.get-flaky-tests.outputs.test }}
-          SYSTEM_ERR: ${{ steps.get-flaky-tests.outputs.content }}
+          SYSTEM_ERROR: ${{ steps.get-flaky-tests.outputs.content }}
           OS: ${{ matrix.os }}
         with:
           filename: .github/ISSUE_TEMPLATES/flaky_test_report.md
