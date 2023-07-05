@@ -43,6 +43,9 @@ jobs:
   process-results:
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      issues: write 
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
