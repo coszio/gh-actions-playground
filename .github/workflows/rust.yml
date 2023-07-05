@@ -32,29 +32,49 @@ jobs:
       # Profile "ci" is configured in .config/nextest.toml
       run: |
         cargo nextest run --workspace --profile ci
-    - name: Process test report
-      id: process-test-report
-      run: |
-        pip install yq
-        xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
-        echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
-    - name: Get flaky test details
-      id: get-flaky-tests
-      if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
-      run: |
-        echo "Flaky tests found"
-        echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
-        echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
-    - name: Create issue for flaky tests
-      if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
-      uses: JasonEtco/create-an-issue@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TEST_NAME: ${{ steps.get-flaky-tests.outputs.test }}
-        SYSTEM_ERR: ${{ steps.get-flaky-tests.outputs.content }}
-        OS: ${{ matrix.os }}
+    - name: Upload test report
+      uses: actions/upload-artifact@v2
       with:
-        filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
-        update_existing: true
-        
-
+        name: junit-${{ matrix.os }}.xml
+        path: target/nextest/ci/junit.xml
+    # - name: Process test report
+    #   id: process-test-report
+    #   run: |
+    #     pip install yq
+    #     xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
+    #     echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
+    
+  process-results:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+    steps:
+      - name: Download test report
+        uses: actions/download-artifact@v2
+        with:
+          name: junit-${{ matrix.os }}.xml
+      - name: Process test report
+        id: process-test-report
+        run: |
+          pip install yq
+          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' junit-${{ matrix.os }}.xml > flaky_tests.json
+          echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
+      - name: Get flaky test details
+        id: get-flaky-tests
+        if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
+        run: |
+          echo "Flaky tests found"
+          echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
+          echo content=$(jq '.flakyFailure[0] | .["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
+      - name: Create issue for flaky tests
+        if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEST_NAME: ${{ steps.get-flaky-tests.outputs.test }}
+          SYSTEM_ERR: ${{ steps.get-flaky-tests.outputs.content }}
+          OS: ${{ matrix.os }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/flaky_test_report.md
+          update_existing: true
