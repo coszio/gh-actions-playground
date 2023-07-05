@@ -15,7 +15,7 @@ mod tests {
 
     #[test]
     fn flaky_test() {
-        assert!(rand::thread_rng().gen_bool(0.5))
+        assert!(rand::thread_rng().gen_bool(0.2))
     }
 
     #[test]
