@@ -67,8 +67,10 @@ jobs:
         if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
         run: |
           echo "Flaky tests found"
-          echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
-          echo content=$(jq '[.flakyFailure] | flatten | .[0]["system-err"]' flaky_tests.json) >> $GITHUB_OUTPUT
+          echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT 
+          content=$(jq '[.flakyFailure] | flatten | .[0]["system-err"]' flaky_tests.json -r) 
+          content="${content//$'\n'/'%0A'}" 
+          echo content=$content >> $GITHUB_OUTPUT
       - uses: actions/checkout@v3
         if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
       - name: Create issue for flaky tests
