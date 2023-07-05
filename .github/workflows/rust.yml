@@ -55,6 +55,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: junit-${{ matrix.os }}.xml
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Process test report
         id: process-test-report
         run: |
