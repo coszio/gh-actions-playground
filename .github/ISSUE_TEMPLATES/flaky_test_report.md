@@ -1,12 +1,10 @@
 ---
-title: Flaky test {{ env.TEST_NAME }}
+title: Flaky test `{{ env.TEST_NAME }}`
 ---
 
 ## Last report
 
-Failing on {{ env.OS }}
-
-system error:
+### System error
 
 ```text
 {{ env.SYSTEM_ERROR }}
@@ -17,3 +15,5 @@ system error:
 [Flaky failure run](https://github.com/{{ env.REPOSITORY }}/actions/runs/{{ env.RUN_ID }})
 
 [Commit](https://github.com/{{ env.REPOSITORY }}/tree/{{ env.SHA }})
+
+Flaking on: {{ env.OS }}

@@ -33,12 +33,6 @@ jobs:
       with:
         name: junit-${{ matrix.os }}.xml
         path: target/nextest/ci/junit.xml
-    # - name: Process test report
-    #   id: process-test-report
-    #   run: |
-    #     pip install yq
-    #     xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' target/nextest/ci/junit.xml > flaky_tests.json
-    #     echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
     
   process-results:
     runs-on: ubuntu-latest
