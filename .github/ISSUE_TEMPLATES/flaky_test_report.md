@@ -12,10 +12,9 @@ system error:
 
 ### Context
 
-[Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+[Failed Run](https://github.com/${{ env.REPOSITORY }}/actions/runs/${{ github.run_id }})
 
-[Commit](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+[Commit](https://github.com/${{ env.REPOSITORY }}/tree/${{ env.SHA }})
 
-Workflow name - `${{ github.workflow }}`
-Job -           `${{ github.job }}`
-Status -        `${{ job.status }}`
+Workflow name - `${{ env.WORKFLOW }}`
+Job -           `${{ env.JOB }}`

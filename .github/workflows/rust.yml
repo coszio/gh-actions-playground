@@ -70,7 +70,7 @@ jobs:
           echo test=$(jq '.["@name"]' flaky_tests.json -r ) >> $GITHUB_OUTPUT
           delimiter="###r###" 
           echo "content<<$delimiter" >> $GITHUB_OUTPUT
-          echo $(jq '[.flakyFailure] | flatten | .[0]["system-err"]' flaky_tests.json -r) >> $GITHUB_OUTPUT
+          echo "$(jq '[.flakyFailure] | flatten | .[0]["system-err"]' flaky_tests.json -r)" >> $GITHUB_OUTPUT
           echo $delimiter >> $GITHUB_OUTPUT
       - uses: actions/checkout@v3
         if: ${{ steps.process-test-report.outputs.has_flaky_tests == 'true' }}
@@ -81,6 +81,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TEST_NAME: ${{ steps.get-flaky-tests.outputs.test }}
           SYSTEM_ERROR: ${{ steps.get-flaky-tests.outputs.content }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SHA: ${{ github.sha }}
+          WORKFLOW: ${{ github.workflow }}
+          JOB: ${{ github.job }}
           OS: ${{ matrix.os }}
         with:
           filename: .github/ISSUE_TEMPLATES/flaky_test_report.md
