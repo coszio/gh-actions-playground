@@ -29,7 +29,7 @@ jobs:
       run: |
         cargo nextest run --workspace --profile ci
     - name: Upload test report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: junit-${{ matrix.os }}.xml
         path: target/nextest/ci/junit.xml
@@ -45,7 +45,7 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
     steps:
       - name: Download test report
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: junit-${{ matrix.os }}.xml
       - name: Display structure of downloaded files

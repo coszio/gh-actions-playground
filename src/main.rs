@@ -14,6 +14,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_os = "linux")]
     fn flaky_test() {
         assert!(rand::thread_rng().gen_bool(0.4))
     }
