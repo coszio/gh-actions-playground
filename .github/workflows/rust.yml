@@ -54,7 +54,7 @@ jobs:
         id: process-test-report
         run: |
           pip install yq
-          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' junit-${{ matrix.os }}.xml > flaky_tests.json
+          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' junit.xml > flaky_tests.json
           echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
       - name: Get flaky test details
         id: get-flaky-tests
