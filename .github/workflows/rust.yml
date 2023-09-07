@@ -48,14 +48,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: junit-${{ matrix.os }}.xml
-          path: junit.xml
       - name: Display structure of downloaded files
         run: ls -R
       - name: Process test report
         id: process-test-report
         run: |
           pip install yq
-          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' junit.xml > flaky_tests.json
+          xq '.testsuites.testsuite.testcase[] | select(. | has("flakyFailure"))' junit-${{ matrix.os }}.xml > flaky_tests.json
           echo has_flaky_tests=$(jq '. | has("flakyFailure")' flaky_tests.json) >> $GITHUB_OUTPUT
       - name: Get flaky test details
         id: get-flaky-tests
