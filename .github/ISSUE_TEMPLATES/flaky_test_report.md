@@ -16,4 +16,6 @@ title: Flaky test `{{ env.TEST_NAME }}`
 
 [Commit](https://github.com/{{ env.REPOSITORY }}/tree/{{ env.SHA }})
 
-Flaking on: {{ env.OS }}
+Flaking on {{ env.OS }}
+
+{{ env.PR }}
