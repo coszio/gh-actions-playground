@@ -81,7 +81,7 @@ jobs:
           WORKFLOW: ${{ github.workflow }}
           JOB: ${{ github.job }}
           OS: ${{ matrix.os }}
-          PR: #${{ github.event.pull_request.number }}
+          PR: "#${{ github.event.pull_request.number }}"
         with:
           filename: .github/ISSUE_TEMPLATES/flaky_test_report.md
           update_existing: true
