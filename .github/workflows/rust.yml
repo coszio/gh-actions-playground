@@ -48,8 +48,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: junit-${{ matrix.os }}.xml
-      - name: Display structure of downloaded files
-        run: ls -R
+      - name: Check PR owner is member of qdrant
+        id: check-pr-owner
+        run: echo ${{ github.event.pull_request.author_association }}
       - name: Process test report
         id: process-test-report
         run: |
