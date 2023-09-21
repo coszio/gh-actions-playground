@@ -17,6 +17,10 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
 
     steps:
+    - run: |
+        echo ${{ github.event.pull_request.author_association }}
+        echo ${{ github.event.pull_request }}
+        echo ${{ contains(fromJSON('["MEMBER", "OWNER"]'), github.event.pull_request.author_association) || github.event.pull_request == null }}
     - name: Install minimal stable
       uses: dtolnay/rust-toolchain@stable 
     - uses: actions/checkout@v3
@@ -48,8 +52,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: junit-${{ matrix.os }}.xml
-      - name: Display structure of downloaded files
-        run: ls -R
+      - name: Check PR owner is member of qdrant
+        id: check-pr-owner
+        run: echo ${{ github.event.pull_request.author_association }}
       - name: Process test report
         id: process-test-report
         run: |
@@ -81,6 +86,7 @@ jobs:
           WORKFLOW: ${{ github.workflow }}
           JOB: ${{ github.job }}
           OS: ${{ matrix.os }}
+          PR: "#${{ github.event.pull_request.number }}"
         with:
           filename: .github/ISSUE_TEMPLATES/flaky_test_report.md
           update_existing: true
